@@ -57,5 +57,6 @@ android {
 dependencies {
     // implementation 'com.github.felHR85:UsbSerial:6.1.0'
     implementation files('libs/usb_serial.aar')
+    implementation project(':usb_serial')
 }
 
