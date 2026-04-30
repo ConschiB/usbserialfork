@@ -56,7 +56,6 @@ android {
 
 dependencies {
     // implementation 'com.github.felHR85:UsbSerial:6.1.0'
-    compileOnly 'com.github.mik3y:usb-serial-for-android:3.9.0' //do not need it because it is already in tim.aar file
     // implementation files('libs/classes.jar')
 }
 

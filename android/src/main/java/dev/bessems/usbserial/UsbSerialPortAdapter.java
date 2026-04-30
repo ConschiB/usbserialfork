@@ -5,8 +5,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.hoho.android.usbserial.driver.UsbSerialPort;
-import com.hoho.android.usbserial.util.SerialInputOutputManager;
+import com.markone.usbserial.driver.UsbSerialPort;
+import com.markone.usbserial.util.SerialInputOutputManager;
 
 import java.io.IOException;
 

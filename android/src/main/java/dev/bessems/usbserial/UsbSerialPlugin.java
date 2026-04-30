@@ -12,14 +12,14 @@ import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.util.Log;
 
-import com.hoho.android.usbserial.driver.UsbSerialDriver;
-import com.hoho.android.usbserial.driver.UsbSerialPort;
-import com.hoho.android.usbserial.driver.UsbSerialProber;
-import com.hoho.android.usbserial.driver.CdcAcmSerialDriver;
-import com.hoho.android.usbserial.driver.Ch34xSerialDriver;
-import com.hoho.android.usbserial.driver.Cp21xxSerialDriver;
-import com.hoho.android.usbserial.driver.FtdiSerialDriver;
-import com.hoho.android.usbserial.driver.ProlificSerialDriver;
+import com.markone.usbserial.driver.UsbSerialDriver;
+import com.markone.usbserial.driver.UsbSerialPort;
+import com.markone.usbserial.driver.UsbSerialProber;
+import com.markone.usbserial.driver.CdcAcmSerialDriver;
+import com.markone.usbserial.driver.Ch34xSerialDriver;
+import com.markone.usbserial.driver.Cp21xxSerialDriver;
+import com.markone.usbserial.driver.FtdiSerialDriver;
+import com.markone.usbserial.driver.ProlificSerialDriver;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -233,10 +233,12 @@ public class UsbSerialPlugin implements FlutterPlugin, MethodCallHandler, EventC
             UsbSerialPortAdapter adapter =
                     new UsbSerialPortAdapter(m_Messenger, interfaceId, connection, port);
 
-            result.success(adapter.getMethodChannelName());
             Log.d(TAG, "success.");
+            Log.d(TAG, "Driver class: " + driver.getClass().getName());
+            Log.d(TAG, "Port class: " + port.getClass().getName());
 
-            result.error(TAG, "Not an Serial device.", null);
+            result.success(adapter.getMethodChannelName());
+            return;
 
         } catch ( java.lang.SecurityException e ) {
 
