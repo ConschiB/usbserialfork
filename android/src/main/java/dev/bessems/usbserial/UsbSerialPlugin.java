@@ -236,13 +236,6 @@ public class UsbSerialPlugin implements FlutterPlugin, MethodCallHandler, EventC
             result.success(adapter.getMethodChannelName());
             Log.d(TAG, "success.");
 
-            if (serialDeviceDevice != null) {
-                int interfaceId = m_InterfaceId++;
-                UsbSerialPortAdapter adapter = new UsbSerialPortAdapter(m_Messenger, interfaceId, connection, serialDeviceDevice);
-                result.success(adapter.getMethodChannelName());
-                Log.d(TAG, "success.");
-                return;
-            }
             result.error(TAG, "Not an Serial device.", null);
 
         } catch ( java.lang.SecurityException e ) {
