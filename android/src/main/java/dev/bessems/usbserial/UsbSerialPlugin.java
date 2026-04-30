@@ -12,7 +12,14 @@ import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.util.Log;
 
-import com.felhr.usbserial.UsbSerialDevice;
+import com.hoho.android.usbserial.driver.UsbSerialDriver;
+import com.hoho.android.usbserial.driver.UsbSerialPort;
+import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.hoho.android.usbserial.driver.CdcAcmSerialDriver;
+import com.hoho.android.usbserial.driver.Ch34xSerialDriver;
+import com.hoho.android.usbserial.driver.Cp21xxSerialDriver;
+import com.hoho.android.usbserial.driver.FtdiSerialDriver;
+import com.hoho.android.usbserial.driver.ProlificSerialDriver;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -199,12 +206,35 @@ public class UsbSerialPlugin implements FlutterPlugin, MethodCallHandler, EventC
                 return;
             }
 
-            UsbSerialDevice serialDeviceDevice;
-            if ( type.equals("") ) {
-                serialDeviceDevice = UsbSerialDevice.createUsbSerialDevice(device, connection, iface);
-            } else {
-                serialDeviceDevice = UsbSerialDevice.createUsbSerialDevice(type, device, connection, iface);
+            UsbSerialDriver driver = createDriver(type, device);
+
+            if (driver == null) {
+                result.error(TAG, "Not a Serial device.", null);
+                return;
             }
+
+            List<UsbSerialPort> ports = driver.getPorts();
+
+            if (ports.isEmpty()) {
+                result.error(TAG, "Serial device has no ports.", null);
+                return;
+            }
+
+            int portIndex = iface >= 0 ? iface : 0;
+
+            if (portIndex >= ports.size()) {
+                result.error(TAG, "Invalid port index.", null);
+                return;
+            }
+
+            UsbSerialPort port = ports.get(portIndex);
+
+            int interfaceId = m_InterfaceId++;
+            UsbSerialPortAdapter adapter =
+                    new UsbSerialPortAdapter(m_Messenger, interfaceId, connection, port);
+
+            result.success(adapter.getMethodChannelName());
+            Log.d(TAG, "success.");
 
             if (serialDeviceDevice != null) {
                 int interfaceId = m_InterfaceId++;
@@ -354,6 +384,32 @@ public class UsbSerialPlugin implements FlutterPlugin, MethodCallHandler, EventC
                 break;
             }
 
+    }
+
+    private UsbSerialDriver createDriver(String type, UsbDevice device) {
+        if (type == null || type.equals("")) {
+            return UsbSerialProber.getDefaultProber().probeDevice(device);
+        }
+
+        switch (type) {
+            case "cdc":
+                return new CdcAcmSerialDriver(device);
+
+            case "ch34x":
+                return new Ch34xSerialDriver(device);
+
+            case "cp210x":
+                return new Cp21xxSerialDriver(device);
+
+            case "ftdi":
+                return new FtdiSerialDriver(device);
+
+            case "pl2303":
+                return new ProlificSerialDriver(device);
+
+            default:
+                return UsbSerialProber.getDefaultProber().probeDevice(device);
+        }
     }
 
 }
