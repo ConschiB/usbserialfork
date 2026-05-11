@@ -103,10 +103,6 @@ public class UsbSerialPortAdapter implements MethodCallHandler, EventChannel.Str
             m_Port.close();
         } catch (Exception ignored) {}
 
-        try {
-            m_Connection.close();
-        } catch (Exception ignored) {}
-
         return true;
     }
 

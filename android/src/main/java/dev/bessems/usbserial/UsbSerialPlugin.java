@@ -198,31 +198,45 @@ public class UsbSerialPlugin implements FlutterPlugin, MethodCallHandler, EventC
             }
         };
 
+        UsbDeviceConnection connection = null;
         try {
-            UsbDeviceConnection connection = m_Manager.openDevice(device);
+            connection = m_Manager.openDevice(device);
 
             if ( connection == null && allowAcquirePermission ) {
                 acquirePermissions(device, cb);
                 return;
             }
 
+            if ( connection == null ) {
+                // Permission flow already ran and we still have no connection.
+                // Don't continue with a null connection - port.open() would NPE later.
+                result.error(TAG, "Failed to open USB device (no permission or device gone).", null);
+                return;
+            }
+
             UsbSerialDriver driver = createDriver(type, device);
 
             if (driver == null) {
-                result.error(TAG, "Not a Serial device.", null);
+                connection.close();
+                result.error(TAG, "Not a Serial device. vid=" + device.getVendorId()
+                        + " pid=" + device.getProductId()
+                        + " class=" + device.getDeviceClass()
+                        + " subclass=" + device.getDeviceSubclass(), null);
                 return;
             }
 
             List<UsbSerialPort> ports = driver.getPorts();
 
             if (ports.isEmpty()) {
+                connection.close();
                 result.error(TAG, "Serial device has no ports.", null);
                 return;
             }
 
-            int portIndex = iface >= 0 ? iface : 0;
+            int portIndex = (iface >= 0 && iface < ports.size()) ? iface : 0;
 
             if (portIndex >= ports.size()) {
+                connection.close();
                 result.error(TAG, "Invalid port index.", null);
                 return;
             }
@@ -242,13 +256,23 @@ public class UsbSerialPlugin implements FlutterPlugin, MethodCallHandler, EventC
 
         } catch ( java.lang.SecurityException e ) {
 
+            if ( connection != null ) {
+                try { connection.close(); } catch (Exception ignored) {}
+            }
             if ( allowAcquirePermission ) {
                 acquirePermissions(device, cb);
             } else {
-                result.error(TAG, "Failed to acquire USB permission.", null);
+                Log.e(TAG, "Failed to acquire USB permission", e);
+                result.error(TAG, "Failed to acquire USB permission: " + e.getMessage(), null);
             }
         } catch ( java.lang.Exception e ) {
-            result.error(TAG, "Failed to acquire USB device.", null);
+            if ( connection != null ) {
+                try { connection.close(); } catch (Exception ignored) {}
+            }
+            // IMPORTANT: log + surface the real cause - the previous code swallowed it.
+            Log.e(TAG, "Failed to acquire USB device", e);
+            result.error(TAG, "Failed to acquire USB device: "
+                    + e.getClass().getSimpleName() + ": " + e.getMessage(), null);
         }
     }
 
