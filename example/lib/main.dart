@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:usb_serial/transaction.dart';
-import 'package:usb_serial/usb_serial.dart';
+import 'package:serial_port/transaction.dart';
+import 'package:serial_port/usb_serial.dart';
 
 void main() => runApp(MyApp());
 

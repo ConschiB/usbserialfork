@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:usb_serial/echo_port.dart';
-import 'package:usb_serial/transaction.dart';
+import 'package:serial_port/echo_port.dart';
+import 'package:serial_port/transaction.dart';
 
 void testTransaction() {
   test("Testing Binary Transaction", () async {
@@ -71,9 +71,11 @@ void testTwoTransformersInSequence() {
       EchoPort p = EchoPort(writeDelay: writeDelay);
 
       var startListening = (int idx) async {
-        Transaction<String> transaction_1 = Transaction.stringTerminated(p.inputStream!, Uint8List.fromList([13, 10])); // note the ending condition
+        Transaction<String> transaction_1 =
+            Transaction.stringTerminated(p.inputStream!, Uint8List.fromList([13, 10])); // note the ending condition
 
-        String? response = await transaction_1.transaction(p, Uint8List.fromList(("config bla bla").codeUnits + [13, 10]), Duration(seconds: 1));
+        String? response =
+            await transaction_1.transaction(p, Uint8List.fromList(("config bla bla").codeUnits + [13, 10]), Duration(seconds: 1));
         expect(response, "config bla bla");
 
         // end this transaction_1
